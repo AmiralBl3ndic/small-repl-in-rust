@@ -13,9 +13,9 @@ fn main() -> Result<(), io::Error> {
     }
 
     let op1 = Operation {
-        left: Operand::Number(Number::Int(30)),
-        right: Operand::Number(Number::Float(12.5f32)),
-        operator: Operator::Plus
+        left: Operand::Number(Number::Int(3)),
+        right: Operand::Number(Number::Float(4.5)),
+        operator: Operator::Times
     };
 
     if let Ok(result) = op1.execute() {

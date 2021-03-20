@@ -1,7 +1,7 @@
 mod symbol;
 
 use std::io::{self, Write, stdin, stdout};
-use symbol::parser::parse_number::{Number, parse_number};
+use symbol::parser::number::{Number, parse_number};
 
 fn main() -> Result<(), io::Error> {
     let stdin = stdin();
@@ -18,7 +18,7 @@ fn main() -> Result<(), io::Error> {
     } else {
         println!("You typed: {}", user_input);
 
-        if let Ok(_) = parse_number(user_input.clone(), 2) {
+        if let (Ok(_), _) = parse_number(user_input.clone(), 2) {
             println!("Done");
         } else {
             panic!("Something went wrong");

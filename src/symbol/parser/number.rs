@@ -11,10 +11,19 @@ impl fmt::Display for NumberParsingError {
 
 type Result<T> = std::result::Result<T, NumberParsingError>;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Number {
 	Int(isize),
 	Float(f32)
+}
+
+impl fmt::Display for Number {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self {
+			Number::Int(val) => write!(f, "Int: {}", val),
+			Number::Float(val) => write!(f, "Float: {}", val)
+		}
+	}
 }
 
 
@@ -22,10 +31,25 @@ pub fn parse_number(line: String, start_at: usize) -> (Result<Number>, usize) {
 	let mut is_float = false;
 	let mut str_value = String::new();
 
+	let parse_and_return = | str_value: String, is_float: bool | -> (Result<Number>, usize) {
+		if is_float {
+			if let Ok(val) = str_value.parse::<f32>() {
+				return (Ok(Number::Float(val)), str_value.len())
+			}
+		}
+
+		// Convert to int and return
+		if let Ok(val) = str_value.parse::<isize>() {
+			return (Ok(Number::Int(val)), str_value.len())
+		}
+
+		(Err(NumberParsingError), str_value.len())
+	};
+
 	for c in line.chars().skip(start_at) {
 		match c {
 			// Add numbers to read value
-			'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => str_value.push(c),
+			x if x.is_digit(10) => str_value.push(c),
 
 			// Handle floating point values
 			'.' => {
@@ -39,31 +63,13 @@ pub fn parse_number(line: String, start_at: usize) -> (Result<Number>, usize) {
 			},
 
 			// Handling non-number character, means end of parsing
-			_ => match str_value.len() {
-				// Handle if no chars were read
-				0 => return (Err(NumberParsingError), 0),
-
-				_ => {
-					// Convert to float and return
-					if is_float {
-						return if let Ok(val) = str_value.parse::<f32>() {
-							(Ok(Number::Float(val)), str_value.len())
-						} else {
-							(Err(NumberParsingError), str_value.len())
-						}
-					}
-
-					// Convert to int and return
-					return if let Ok(val) = str_value.parse::<isize>() {
-						(Ok(Number::Int(val)), str_value.len())
-					} else {
-						(Err(NumberParsingError), str_value.len())
-					}
-				}
+			_ => {
+				// Convert to float and return
+				return parse_and_return(str_value, is_float);
 			}
 		}
 	}
 
-	// Default, should not happen
-	(Err(NumberParsingError), str_value.len())
+	// Should only reach here if for loop breaks
+	return parse_and_return(str_value, is_float);
 }

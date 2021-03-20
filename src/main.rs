@@ -1,35 +1,28 @@
 mod symbol;
 
-use std::io::{self, Write, stdin, stdout};
+use std::io::{self};
 use symbol::parser::number::{Number, parse_number};
+use symbol::operation::{Operation, Operand};
+use symbol::parser::operator::Operator;
 
 fn main() -> Result<(), io::Error> {
-    let stdin = stdin();
-    let mut stdout = stdout();
-
-    print!("Hello, world!\n> ");
-
-    stdout.flush()?;
-
-    let mut user_input = String::new();
-
-    if let Err(e) = stdin.read_line(&mut user_input) {
-        panic!("Unable to read user input: {}", e);
+    if let (Ok(val), _) = parse_number(String::from("az123.4"), 2) {
+        println!("{}\n{}", Operand::Number(val), Operand::Unit());
     } else {
-        println!("You typed: {}", user_input);
-
-        if let (Ok(_), _) = parse_number(user_input.clone(), 2) {
-            println!("Done");
-        } else {
-            panic!("Something went wrong");
-        }
-
-        user_input.clear();
+        println!("Unable to parse");
     }
 
-    let x: Number = Number::Int(42isize);
+    let op1 = Operation {
+        left: Operand::Number(Number::Int(30)),
+        right: Operand::Number(Number::Float(12.5f32)),
+        operator: Operator::Plus
+    };
 
-    println!("{:#?}", x);
+    if let Ok(result) = op1.execute() {
+        println!("{}", result);
+    } else {
+        println!("Cannot perform operation");
+    }
 
     Ok(())
 }
